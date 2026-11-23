@@ -266,6 +266,15 @@ static void emit_ir(parser_t *p, ir_op_t op, int dst, int src1, int src2, int64_
 static int parse_expr(parser_t *p);
 
 static int parse_primary(parser_t *p) {
+    if (p->lex->cur.kind == TOK_MINUS) {
+        next_token(p->lex);
+        if (p->lex->cur.kind == TOK_NUM) {
+            int r = alloc_reg(p);
+            emit_ir(p, IR_CONST, r, 0, 0, -p->lex->cur.int_val);
+            next_token(p->lex);
+            return r;
+        }
+    }
     if (p->lex->cur.kind == TOK_NUM) {
         int r = alloc_reg(p);
         emit_ir(p, IR_CONST, r, 0, 0, p->lex->cur.int_val);
