@@ -12,16 +12,27 @@ from typing import List, Optional, Callable, Any, Dict
 from .native_compiler import compile_pseudocode, NativeFunction
 
 def _find_library() -> Optional[str]:
-    possible_paths = [
-        os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../lib/libujit.so")),
-        os.path.abspath(os.path.join(os.path.dirname(__file__), "../../lib/libujit.so")),
-        os.path.abspath(os.path.join(os.path.dirname(__file__), "../lib/libujit.so")),
-        os.path.abspath(os.path.join(os.path.dirname(__file__), "libujit.so")),
-        "/mnt/c/Users/natsa/Documents/universal-jit/lib/libujit.so",
+    if os.name == "nt":
+        lib_names = ("libujit.dll", "ujit.dll")
+    elif sys.platform == "darwin":
+        lib_names = ("libujit.dylib", "libujit.so")
+    else:
+        lib_names = ("libujit.so",)
+
+    base_dirs = [
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../lib")),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "../../lib")),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "../lib")),
+        os.path.abspath(os.path.dirname(__file__)),
     ]
-    for p in possible_paths:
-        if os.path.exists(p):
-            return p
+    if os.name != "nt":
+        base_dirs.append("/mnt/c/Users/natsa/Documents/universal-jit/lib")
+
+    for d in base_dirs:
+        for name in lib_names:
+            p = os.path.join(d, name)
+            if os.path.exists(p):
+                return p
     return None
 
 _lib = None
